@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Livestock Health Monitoring System - Green Valley Farm</title>
+  <meta name="description" content="Healthy Animals. Smarter Farming. Complete multi-language livestock health monitoring system prototype.">
+  <style>
+    /* ================= CSS VARIABLES & DESIGN SYSTEM ================= */
+    :root {
+      --primary: #16a34a;
+      --primary-hover: #15803d;
+      --primary-light: #f0fdf4;
+      --primary-border: #bbf7d0;
+      --dark-green: #14532d;
+      --text-dark: #0f172a;
+      --text-main: #334155;
+      --text-muted: #64748b;
+      --text-light: #94a3b8;
+      --bg-app: #f8fafc;
+      --bg-surface: #ffffff;
+      --border-color: #e2e8f0;
+
+      --earth-beige: #fdfbf7;
+      --earth-accent: #876445;
+      
+      --status-healthy: #16a34a;
+      --status-healthy-bg: #dcfce7;
+      --status-monitoring: #0284c7;
+      --status-monitoring-bg: #e0f2fe;
+      --status-attention: #d97706;
+      --status-attention-bg: #fef3c7;
+      --status-critical: #dc2626;
+      --status-critical-bg: #fee2e2;
+
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.03);
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* TYPOGRAPHY & BADGES */
+    h1, h2, h3, h4, h5 { color: var(--text-dark); font-weight: 600; line-height: 1.25; }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    input, select, textarea { font-family: inherit; font-size: 0.92rem; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .badge-healthy { background: var(--status-healthy-bg); color: var(--status-healthy); }
+    .badge-healthy .badge-dot { background: var(--status-healthy); }
+    .badge-monitoring { background: var(--status-monitoring-bg); color: var(--status-monitoring); }
+    .badge-monitoring .badge-dot { background: var(--status-monitoring); }
+    .badge-attention { background: var(--status-attention-bg); color: var(--status-attention); }
+    .badge-attention .badge-dot { background: var(--status-attention); }
+    .badge-critical { background: var(--status-critical-bg); color: var(--status-critical); }
+    .badge-critical .badge-dot { background: var(--status-critical); }
+
+    /* LAYOUT STRUCTURE */
+    #app-container { display: flex; width: 100vw; min-height: 100vh; position: relative; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 260px;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      z-index: 40;
+      transition: transform 0.3s ease;
+    }
+    .sidebar-header {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .brand-icon {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+    .brand-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--dark-green);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .brand-tagline {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .nav-item button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      text-align: left;
+    }
+    .nav-item button:hover {
+      background-color: var(--bg-app);
+      color: var(--primary-hover);
+    }
+    .nav-item.active button {
+      background-color: var(--primary-light);
+      color: var(--primary-hover);
+      font-weight: 600;
+    }
+    .nav-item button svg {
+      width: 18px; height: 18px; stroke-width: 2; flex-shrink: 0;
+    }
+
+    .sidebar-footer {
+      padding: 16px 12px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .user-profile-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      background-color: var(--bg-app);
+    }
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--dark-green);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .user-info { flex: 1; overflow: hidden; }
+    .user-name { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-role { font-size: 0.72rem; color: var(--text-muted); }
+
+    /* MAIN WRAPPER */
+    .main-wrapper {
+      flex: 1;
+      margin-left: 260px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 100vh;
+    }
+
+    /* TOP HEADER */
+    .top-header {
+      height: 70px;
+      background-color: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .mobile-menu-btn { display: none; padding: 8px; border-radius: var(--radius-md); color: var(--text-main); }
+    .header-title-container h1 { font-size: 1.2rem; }
+    .header-subtitle { font-size: 0.78rem; color: var(--text-muted); }
+
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    .farm-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background-color: #ecfdf5;
+      border: 1px solid var(--primary-border);
+      border-radius: var(--radius-full);
+      color: var(--primary-hover);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    
+    /* LANGUAGE SELECTOR PILL */
+    .lang-selector {
+      display: inline-flex;
+      background: var(--bg-app);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      padding: 2px;
+    }
+    .lang-btn {
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+    .lang-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .header-search { position: relative; width: 200px; }
+    .header-search input {
+      width: 100%;
+      padding: 7px 12px 7px 34px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background-color: var(--bg-app);
+      color: var(--text-dark);
+    }
+    .header-search svg {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; color: var(--text-light);
+    }
+
+    .icon-btn {
+      position: relative;
+      width: 36px; height: 36px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-main);
+      background: var(--bg-surface);
+    }
+    .icon-btn:hover { background: var(--bg-app); color: var(--primary-hover); }
+    .icon-btn .badge-count {
+      position: absolute; top: -4px; right: -4px;
+      background: var(--status-critical); color: white;
+      font-size: 0.65rem; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--bg-surface);
+    }
+
+    /* NOTIFICATION DROPDOWN */
+    .notif-dropdown {
+      position: absolute; top: 65px; right: 32px;
+      width: 340px; background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      display: none; flex-direction: column; z-index: 100;
+      overflow: hidden;
+    }
+    .notif-dropdown.show { display: flex; }
+    .notif-header { padding: 14px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .notif-list { max-height: 300px; overflow-y: auto; }
+    .notif-item { padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; gap: 12px; cursor: pointer; }
+    .notif-item:hover { background: var(--bg-app); }
+
+    /* CONTENT BODY */
+    .content-body { padding: 32px; flex: 1; }
+    .view-section { display: none; animation: fadeIn 0.2s ease-in-out; }
+    .view-section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 9px 16px; border-radius: var(--radius-md); font-size: 0.88rem; font-weight: 600;
+      transition: all 0.15s ease; cursor: pointer; border: 1px solid transparent;
+    }
+    .btn-primary { background-color: var(--primary); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25); }
+    .btn-secondary { background-color: var(--bg-surface); border-color: var(--border-color); color: var(--text-main); }
+    .btn-secondary:hover { background-color: var(--bg-app); border-color: var(--text-light); }
+    .btn-sm { padding: 5px 12px; font-size: 0.8rem; }
+    .btn-icon-only { padding: 6px; border-radius: var(--radius-sm); }
+
+    /* DASHBOARD HERO BANNER (LIVESTOCK THEMED BACKGROUND) */
+    .hero-banner {
+      background: linear-gradient(135deg, #052e16 0%, #14532d 60%, #166534 100%);
+      color: white;
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+    }
+    /* SUBTLE PASTURE/SILHOUETTE BACKGROUND SVG */
+    .hero-bg-svg {
+      position: absolute; right: -20px; bottom: -20px; opacity: 0.18; pointer-events: none; width: 420px; height: 160px;
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 600px; }
+    .hero-greeting { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .hero-subtitle { font-size: 0.9rem; opacity: 0.9; margin-bottom: 16px; }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* FARM HEALTH SCORE BADGE */
+    .score-card {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+      min-width: 220px;
+    }
+    .score-circle {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: radial-gradient(circle, #22c55e 0%, #15803d 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; color: white;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+      flex-shrink: 0;
+    }
+    .score-info { display: flex; flex-direction: column; }
+    .score-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.85; }
+    .score-val { font-size: 1.25rem; font-weight: 700; }
+    .score-sub { font-size: 0.68rem; opacity: 0.75; }
+
+    /* SUMMARY STAT CARDS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .stat-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+    .stat-value { font-size: 1.7rem; font-weight: 700; color: var(--text-dark); line-height: 1.1; margin-bottom: 6px; }
+    .stat-trend { font-size: 0.72rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* GRID LAYOUTS FOR DASHBOARD */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-title { font-size: 0.95rem; font-weight: 600; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+    .card-body { padding: 20px; flex: 1; }
+
+    /* TODAY'S ATTENTION SECTION */
+    .attention-card {
+      border-left: 4px solid var(--status-critical);
+      background: #fef2f2;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .attention-info { display: flex; align-items: center; gap: 12px; }
+    .attention-id { font-weight: 700; font-family: monospace; font-size: 0.9rem; }
+    .attention-msg { font-size: 0.85rem; color: var(--text-main); }
+
+    /* ANIMAL OF THE DAY CARD */
+    .animal-spotlight {
+      background: linear-gradient(135deg, #fdfbf7 0%, #f7f3eb 100%);
+      border: 1px solid #e7dfd5;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex; gap: 16px; align-items: center;
+      margin-bottom: 24px;
+    }
+    .spotlight-avatar {
+      width: 70px; height: 70px; border-radius: 50%; background: #e2d9cc;
+      display: flex; align-items: center; justify-content: center; font-size: 2.2rem; flex-shrink: 0;
+      border: 2px solid white; box-shadow: var(--shadow-sm);
+    }
+    .spotlight-details { flex: 1; }
+    .spotlight-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--earth-accent); font-weight: 700; }
+    .spotlight-name { font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+    .spotlight-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; }
+
+    /* DAILY FARM CHECKLIST */
+    .task-list { display: flex; flex-direction: column; gap: 10px; }
+    .task-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; background: var(--bg-app); border: 1px solid var(--border-color);
+      border-radius: var(--radius-md); font-size: 0.88rem; cursor: pointer; transition: background 0.15s;
+    }
+    .task-item:hover { background: var(--bg-surface); }
+    .task-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); }
+    .task-item.done span { text-decoration: line-through; color: var(--text-muted); }
+
+    .progress-bar-bg { width: 100%; height: 8px; background: var(--border-color); border-radius: var(--radius-full); overflow: hidden; margin-top: 8px; }
+    .progress-bar-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
+
+    /* RECENT ACTIVITY TIMELINE */
+    .activity-list { display: flex; flex-direction: column; gap: 14px; }
+    .activity-item { display: flex; gap: 12px; align-items: flex-start; }
+    .activity-icon {
+      width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      background: var(--bg-app); border: 1px solid var(--border-color); font-size: 0.85rem;
+    }
+    .activity-content { flex: 1; }
+    .activity-title { font-size: 0.85rem; font-weight: 600; color: var(--text-dark); }
+    .activity-desc { font-size: 0.8rem; color: var(--text-muted); }
+    .activity-time { font-size: 0.72rem; color: var(--text-light); margin-top: 2px; }
+
+    /* TABLES & LISTS */
+    .table-responsive { width: 100%; overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
+    .data-table th {
+      padding: 12px 16px; background-color: var(--bg-app); color: var(--text-muted);
+      font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .data-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); color: var(--text-main); vertical-align: middle; }
+    .data-table tr:hover { background-color: #f8fafc; }
+    .animal-id-tag { font-weight: 700; color: var(--text-dark); font-family: monospace; font-size: 0.9rem; }
+
+    /* ANIMALS GRID VIEW */
+    .filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .filter-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1; }
+    .search-input-wrap { position: relative; min-width: 220px; }
+    .search-input-wrap input { width: 100%; padding: 9px 12px 9px 36px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background-color: var(--bg-surface); }
+    .search-input-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--text-light); }
+    .select-input { padding: 9px 32px 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background-color: var(--bg-surface); color: var(--text-main); cursor: pointer; }
+
+    .animals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 20px; }
+    .animal-card {
+      background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+      padding: 18px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .animal-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .animal-card-header { display: flex; align-items: center; justify-content: space-between; }
+    .animal-card-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.82rem; }
+    .card-info-item { display: flex; flex-direction: column; }
+    .info-label { color: var(--text-muted); font-size: 0.72rem; }
+    .info-value { font-weight: 600; color: var(--text-dark); }
+
+    /* MODAL WINDOWS */
+    .modal-backdrop {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px);
+      z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal-container {
+      background: var(--bg-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+      width: 100%; max-width: 650px; max-height: 90vh; display: flex; flex-direction: column;
+      overflow: hidden; animation: modalSlide 0.2s ease-out;
+    }
+    @keyframes modalSlide { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; }
+    .modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; background-color: var(--bg-app); }
+
+    /* FORM STYLING */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 580px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    .form-label { font-size: 0.82rem; font-weight: 600; color: var(--text-dark); }
+    .form-control { padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background-color: var(--bg-surface); color: var(--text-main); width: 100%; }
+    .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15); }
+
+    /* TABS */
+    .tabs-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; gap: 4px; }
+    .tab-btn { padding: 10px 16px; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); border-bottom: 2px solid transparent; }
+    .tab-btn:hover { color: var(--primary); }
+    .tab-btn.active { color: var(--primary-hover); border-bottom-color: var(--primary); font-weight: 600; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* TOAST NOTIFICATIONS */
+    #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 300; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+    .toast {
+      background: var(--text-dark); color: white; padding: 12px 18px; border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; font-size: 0.88rem;
+      pointer-events: auto; animation: toastIn 0.25s ease; max-width: 360px;
+    }
+    @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .toast-success { background-color: #14532d; border-left: 4px solid #22c55e; }
+    .toast-info { background-color: #0c4a6e; border-left: 4px solid #38bdf8; }
+
+    /* EMPTY STATE */
+    .empty-state { padding: 48px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); }
+    .empty-icon { width: 54px; height: 54px; background: var(--bg-app); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; color: var(--text-light); }
+
+    /* PRINTABLE REPORT PREVIEW STYLING */
+    @media print {
+      body * { visibility: hidden; }
+      #printable-report, #printable-report * { visibility: visible; }
+      #printable-report { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 868px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main-wrapper { margin-left: 0; }
+      .mobile-menu-btn { display: block; }
+      .top-header { padding: 0 16px; }
+      .content-body { padding: 20px 16px; }
+      .header-search, .farm-tag { display: none; }
+
+      .responsive-cards-table thead { display: none; }
+      .responsive-cards-table tr { display: block; margin-bottom: 14px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 12px; }
+      .responsive-cards-table td { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border-color); }
+      .responsive-cards-table td:last-child { border-bottom: none; }
+      .responsive-cards-table td::before { content: attr(data-label); font-weight: 600; font-size: 0.78rem; color: var(--text-muted); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-icon">🐄</div>
+      <div>
+        <div class="brand-title" data-i18n="app_title">LIVESTOCK HEALTH</div>
+        <div class="brand-tagline" data-i18n="tagline">Healthy Animals. Smarter Farming.</div>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li class="nav-item active" data-view="dashboard">
+        <button aria-label="Dashboard View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          <span data-i18n="dashboard">Dashboard</span>
+        </button>
+      </li>
+      <li class="nav-item" data-view="animals">
+        <button aria-label="Animals View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2a5 5 0 0 1 5 5v3a5 5 0 0 1-10 0V7a5 5 0 0 1 5-2z"/><path d="M19 11v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          <span data-i18n="animals">Animals</span>
+        </button>
+      </li>
+      <li class="nav-item" data-view="health-monitoring">
+        <button aria-label="Health Monitoring View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span data-i18n="health_monitoring">Health Monitoring</span>
+        </button>
+      </li>
+      <li class="nav-item" data-view="vaccinations">
+        <button aria-label="Vaccinations View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m18 2 4 4-14 14H4v-4L18 2z"/><path d="M14.5 5.5l4 4"/></svg>
+          <span data-i18n="vaccinations">Vaccinations</span>
+        </button>
+      </li>
+      <li class="nav-item" data-view="medical-records">
+        <button aria-label="Medical Records View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span data-i18n="medical_records">Medical Records</span>
+        </button>
+      </li>
+      <li class="nav-item" data-view="alerts">
+        <button aria-label="Alerts View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span data-i18n="alerts">Alerts</span>
+        </button>
+      </li>
+      <li class="nav-item" data-view="daily-tasks">
+        <button aria-label="Daily Tasks View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span data-i18n="daily_tasks">Daily Tasks</span>
+        </button>
+      </li>
+      <li class="nav-item" data-view="vet-support">
+        <button aria-label="Veterinary Support View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+          <span data-i18n="vet_support">Veterinary Support</span>
+        </button>
+      </li>
+      <li class="nav-item" data-view="reports">
+        <button aria-label="Reports View">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span data-i18n="reports">Reports & Analytics</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-bar">
+        <div class="avatar">GV</div>
+        <div class="user-info">
+          <div class="user-name">Dr. Sharma</div>
+          <div class="user-role">Head Veterinarian</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper">
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="header-left">
+        <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle Navigation Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="header-title-container">
+          <h1 id="page-title" data-i18n="dashboard_header">Livestock Health Dashboard</h1>
+          <div class="header-subtitle" id="page-subtitle" data-i18n="header_sub">Monitor your herd and keep their health on track.</div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- THREE LANGUAGE SELECTOR -->
+        <div class="lang-selector">
+          <button class="lang-btn active" onclick="app.setLanguage('en')">EN</button>
+          <button class="lang-btn" onclick="app.setLanguage('mr')">मराठी</button>
+          <button class="lang-btn" onclick="app.setLanguage('hi')">हिंदी</button>
+        </div>
+
+        <div class="farm-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Green Valley Farm
+        </div>
+
+        <div class="header-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="global-search-input" placeholder="Search..." aria-label="Global Search">
+        </div>
+
+        <button class="icon-btn" id="notif-bell-btn" aria-label="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="badge-count" id="notif-count">3</span>
+        </button>
+      </div>
+
+      <!-- NOTIFICATION PANEL DROPDOWN -->
+      <div class="notif-dropdown" id="notif-dropdown">
+        <div class="notif-header">
+          <h4 style="font-size: 0.9rem;" data-i18n="notifications">Notifications</h4>
+          <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600; cursor: pointer;" onclick="app.markNotificationsRead()">Mark read</span>
+        </div>
+        <div class="notif-list" id="notif-list-container"></div>
+      </div>
+    </header>
+
+    <!-- CONTENT BODY -->
+    <main class="content-body">
+
+      <!-- 1. DASHBOARD VIEW -->
+      <section class="view-section active" id="view-dashboard">
+        <!-- HERO BANNER WITH LIVESTOCK BACKGROUND -->
+        <div class="hero-banner">
+          <!-- SUBTLE PASTURE/HERD SILHOUETTE BACKGROUND SVG -->
+          <svg class="hero-bg-svg" viewBox="0 0 500 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 160 Q120 100 250 140 T500 120 L500 200 L0 200 Z" fill="white"/>
+            <!-- Silhouetted Cow & Hills -->
+            <circle cx="380" cy="100" r="40" fill="white" opacity="0.3"/>
+            <path d="M410 135 C410 125 425 125 430 135 C435 130 445 135 440 145 L410 145 Z" fill="white"/>
+          </svg>
+
+          <div class="hero-content">
+            <div class="hero-greeting" data-i18n="greeting">Good Morning 👋</div>
+            <div class="hero-subtitle" data-i18n="hero_sub">Here's the health status of your herd today.</div>
+            <div class="hero-actions">
+              <button class="btn btn-primary" onclick="app.openModal('log-vitals-modal')">
+                <span data-i18n="record_health_check">+ Record Health Check</span>
+              </button>
+              <button class="btn btn-secondary" style="background: rgba(255,255,255,0.15); color: white; border:1px solid rgba(255,255,255,0.3);" onclick="app.openModal('add-animal-modal')">
+                <span data-i18n="add_animal">+ Add Animal</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- FARM HEALTH SCORE CARD -->
+          <div class="score-card">
+            <div class="score-circle">91%</div>
+            <div class="score-info">
+              <span class="score-title" data-i18n="farm_score">Farm Health Score</span>
+              <span class="score-val">91 / 100</span>
+              <span class="score-sub" data-i18n="score_desc">Based on health status, vaccination and checkups.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- OVERVIEW CARDS -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label" data-i18n="total_animals">Total Animals</span>
+              <span class="stat-value" id="stat-total-animals">128</span>
+              <span class="stat-trend" style="color: var(--status-healthy);">+4 this month</span>
+            </div>
+            <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;">🐄</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label" data-i18n="healthy">Healthy</span>
+              <span class="stat-value" id="stat-healthy-animals">112</span>
+              <span class="stat-trend" style="color: var(--status-healthy);">87.5% of herd</span>
+            </div>
+            <div class="stat-icon" style="background: var(--status-healthy-bg); color: var(--status-healthy);">🌿</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label" data-i18n="needs_attention">Needs Attention</span>
+              <span class="stat-value" id="stat-attention-animals">10</span>
+              <span class="stat-trend" style="color: var(--status-attention);">Requires observation</span>
+            </div>
+            <div class="stat-icon" style="background: var(--status-attention-bg); color: var(--status-attention);">⚠️</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label" data-i18n="vaccinations_due">Vaccinations Due</span>
+              <span class="stat-value" id="stat-vaccinations-due">6</span>
+              <span class="stat-trend" style="color: #0284c7;">Due within 7 days</span>
+            </div>
+            <div class="stat-icon" style="background: #f0fdf4; color: var(--primary);">💉</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-info">
+              <span class="stat-label" data-i18n="checkups_this_week">Checkups This Week</span>
+              <span class="stat-value">8</span>
+              <span class="stat-trend" style="color: var(--primary);">Routine completed</span>
+            </div>
+            <div class="stat-icon" style="background: #fdfbf7; color: var(--earth-accent);">🩺</div>
+          </div>
+        </div>
+
+        <!-- WHAT NEEDS ATTENTION TODAY & ANIMAL OF THE DAY -->
+        <div class="dashboard-grid">
+          <div>
+            <!-- TODAY'S ATTENTION -->
+            <div class="card" style="margin-bottom: 24px;">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <span>🔴</span> <span data-i18n="attention_today_title">What Needs Attention Today?</span>
+                </h3>
+                <button class="btn btn-secondary btn-sm" onclick="app.switchView('alerts')">Review All</button>
+              </div>
+              <div class="card-body">
+                <div class="attention-card">
+                  <div class="attention-info">
+                    <span class="badge badge-critical">🔴 HIGH</span>
+                    <span class="attention-id">COW-087</span>
+                    <span class="attention-msg">Elevated temperature (39.8°C) detected</span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="app.viewAnimalDetail('COW-087')">Check</button>
+                </div>
+                <div class="attention-card" style="border-left-color: var(--status-attention); background: #fefce8;">
+                  <div class="attention-info">
+                    <span class="badge badge-attention">🟡 MEDIUM</span>
+                    <span class="attention-id">GOAT-023</span>
+                    <span class="attention-msg">Vaccination due in 3 days (PPR Vaccine)</span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="app.viewAnimalDetail('GOAT-023')">Check</button>
+                </div>
+                <div class="attention-card" style="border-left-color: var(--status-attention); background: #fefce8;">
+                  <div class="attention-info">
+                    <span class="badge badge-attention">🟡 MEDIUM</span>
+                    <span class="attention-id">BUF-011</span>
+                    <span class="attention-msg">Monthly health checkup overdue by 2 days</span>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="app.viewAnimalDetail('BUF-011')">Check</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- UPCOMING VACCINATIONS -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <span>💉</span> <span data-i18n="upcoming_vaccinations">Upcoming Vaccinations</span>
+                </h3>
+                <button class="btn btn-secondary btn-sm" onclick="app.switchView('vaccinations')">View All</button>
+              </div>
+              <div class="card-body" style="padding:0;">
+                <div class="table-responsive">
+                  <table class="data-table responsive-cards-table">
+                    <thead>
+                      <tr>
+                        <th>Animal ID</th>
+                        <th>Species</th>
+                        <th>Vaccine</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dashboard-vaccinations-table"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: ANIMAL OF THE DAY & DAILY TASKS -->
+          <div>
+            <!-- ANIMAL OF THE DAY -->
+            <div class="animal-spotlight">
+              <div class="spotlight-avatar">🐄</div>
+              <div class="spotlight-details">
+                <div class="spotlight-title" data-i18n="animal_of_the_day">Animal of the Day</div>
+                <div class="spotlight-name">COW-104</div>
+                <div class="spotlight-meta">Holstein • Female • 4 Years</div>
+                <div style="display:flex; gap:6px; margin-bottom:8px;">
+                  <span class="badge badge-healthy"><span class="badge-dot"></span>Healthy</span>
+                  <span class="badge badge-monitoring">Low Risk</span>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="app.viewAnimalDetail('COW-104')">
+                  <span data-i18n="view_profile">View Profile</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- DAILY FARM CHECKLIST -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <span>☑️</span> <span data-i18n="todays_tasks">Today's Farm Tasks</span>
+                </h3>
+                <span style="font-size:0.75rem; color:var(--text-muted);" id="task-progress-text">3 of 5 completed</span>
+              </div>
+              <div class="card-body">
+                <div class="task-list" id="daily-task-container">
+                  <!-- Task items rendered dynamically -->
+                </div>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill" id="task-progress-bar" style="width: 60%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. ANIMALS VIEW -->
+      <section class="view-section" id="view-animals">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <div class="search-input-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="animal-search-input" placeholder="Search ID or breed..." oninput="app.filterAnimals()">
+            </div>
+            
+            <select class="select-input" id="animal-species-filter" onchange="app.filterAnimals()">
+              <option value="all">All Species</option>
+              <option value="Cow">Cow</option>
+              <option value="Goat">Goat</option>
+              <option value="Sheep">Sheep</option>
+              <option value="Buffalo">Buffalo</option>
+            </select>
+
+            <select class="select-input" id="animal-status-filter" onchange="app.filterAnimals()">
+              <option value="all">All Statuses</option>
+              <option value="Healthy">Healthy</option>
+              <option value="Monitoring">Monitoring</option>
+              <option value="Needs Attention">Needs Attention</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="app.openModal('add-animal-modal')">
+            <span data-i18n="add_animal">+ Add Animal</span>
+          </button>
+        </div>
+
+        <div class="animals-grid" id="animals-grid-container"></div>
+      </section>
+
+      <!-- 3. HEALTH MONITORING VIEW -->
+      <section class="view-section" id="view-health-monitoring">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Vitals & Observation Logs</h3>
+            <button class="btn btn-primary btn-sm" onclick="app.openModal('log-vitals-modal')">
+              <span data-i18n="record_health_check">+ Record Health Check</span>
+            </button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date/Time</th>
+                    <th>Animal ID</th>
+                    <th>Temp (°C)</th>
+                    <th>Heart Rate</th>
+                    <th>Weight</th>
+                    <th>Status</th>
+                    <th>Clinical Observation</th>
+                  </tr>
+                </thead>
+                <tbody id="vitals-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. VACCINATIONS VIEW -->
+      <section class="view-section" id="view-vaccinations">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <select class="select-input" id="vac-status-filter" onchange="app.renderVaccinationsView()">
+              <option value="all">All Statuses</option>
+              <option value="Due Soon">Due Soon</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="app.openModal('schedule-vac-modal')">Schedule Vaccination</button>
+        </div>
+
+        <!-- VACCINATION MINI CALENDAR & LIST -->
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">Schedule List</h3></div>
+            <div class="card-body" style="padding:0;">
+              <div class="table-responsive">
+                <table class="data-table responsive-cards-table">
+                  <thead>
+                    <tr>
+                      <th>Animal ID</th>
+                      <th>Species</th>
+                      <th>Vaccine</th>
+                      <th>Due Date</th>
+                      <th>Status</th>
+                      <th style="text-align: right;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vaccinations-full-table"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- MINI VACCINATION CALENDAR -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Calendar (Sep 2026)</h3>
+            </div>
+            <div class="card-body">
+              <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:10px;">
+                <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+              </div>
+              <div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; font-size:0.82rem;" id="mini-calendar-grid">
+                <!-- Rendered dynamically -->
+              </div>
+              <div style="margin-top:16px; padding:12px; background:var(--bg-app); border-radius:var(--radius-md); font-size:0.8rem;" id="calendar-selected-details">
+                Select a date with a green dot to view scheduled vaccinations.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. MEDICAL RECORDS VIEW -->
+      <section class="view-section" id="view-medical-records">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <div class="search-input-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="medical-search-input" placeholder="Search medical records..." oninput="app.renderMedicalRecordsView()">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="app.openModal('add-medical-modal')">New Record</button>
+        </div>
+
+        <div class="card">
+          <div class="card-body" style="padding:0;">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Animal ID</th>
+                    <th>Diagnosis / Observation</th>
+                    <th>Treatment Provided</th>
+                    <th>Attending Vet</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="medical-records-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. ALERTS VIEW -->
+      <section class="view-section" id="view-alerts">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Health Alerts & Warning Center</h3></div>
+          <div class="card-body">
+            <div class="activity-list" id="alerts-page-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. DAILY TASKS VIEW -->
+      <section class="view-section" id="view-daily-tasks">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Daily Farm Task Management</h3>
+          </div>
+          <div class="card-body">
+            <div class="task-list" id="full-task-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. VETERINARY SUPPORT VIEW -->
+      <section class="view-section" id="view-vet-support">
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">Veterinary Consultant Profile</h3></div>
+            <div class="card-body">
+              <div style="display:flex; gap:16px; align-items:center; margin-bottom:20px;">
+                <div class="avatar" style="width:60px; height:60px; font-size:1.4rem;">👨‍⚕️</div>
+                <div>
+                  <h3 style="font-size:1.1rem;">Dr. Sharma</h3>
+                  <div style="color:var(--text-muted); font-size:0.85rem;">Senior Veterinary Consultant</div>
+                  <div style="font-size:0.8rem; color:var(--primary); font-weight:600; margin-top:2px;">Available: Mon - Sat (8 AM - 6 PM)</div>
+                </div>
+              </div>
+              <p style="font-size:0.88rem; color:var(--text-main); margin-bottom:16px;">
+                Assigned chief veterinary specialist for Green Valley Farm. Conducts routine herd inspections, vaccine administration, and emergency health checkups.
+              </p>
+              <div style="display:flex; gap:12px;">
+                <button class="btn btn-primary" onclick="app.showToast('Schedule Visit modal simulated', 'info')">Schedule Visit</button>
+                <button class="btn btn-secondary" onclick="app.switchView('medical-records')">View Past Records</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">Recent Vet Visit History</h3></div>
+            <div class="card-body">
+              <div class="activity-list">
+                <div class="activity-item">
+                  <div class="activity-icon">🩺</div>
+                  <div class="activity-content">
+                    <div class="activity-title">Routine Herd Checkup</div>
+                    <div class="activity-desc">Dr. Sharma inspected 24 cows. All vitals normal.</div>
+                    <div class="activity-time">Sep 18, 2026</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-icon">💉</div>
+                  <div class="activity-content">
+                    <div class="activity-title">Anthrax Vaccination Drive</div>
+                    <div class="activity-desc">15 cows immunized successfully.</div>
+                    <div class="activity-time">Sep 10, 2026</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. REPORTS VIEW -->
+      <section class="view-section" id="view-reports">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label style="font-size: 0.85rem; font-weight: 600;">Timeframe:</label>
+            <select class="select-input" id="report-timeframe" onchange="app.renderReportsView()">
+              <option value="7">Last 7 days</option>
+              <option value="30" selected>Last 30 days</option>
+              <option value="90">Last 3 months</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="app.openModal('printable-report-modal')">
+            <span data-i18n="generate_report">Generate Health Report</span>
+          </button>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">Herd Health Distribution</h3></div>
+            <div class="card-body">
+              <div style="height: 200px; display: flex; align-items: flex-end; gap: 20px; padding: 20px 0; border-bottom: 2px solid var(--border-color);" id="report-bars-container"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><h3 class="card-title">Vaccination Coverage Rate</h3></div>
+            <div class="card-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+              <div style="font-size: 2.8rem; font-weight: 800; color: var(--primary);">94%</div>
+              <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                120 out of 128 livestock fully up-to-date with core vaccinations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- 1. ANIMAL PROFILE MODAL -->
+<div class="modal-backdrop" id="animal-detail-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <div>
+        <h3 id="modal-animal-id" class="animal-id-tag" style="font-size: 1.2rem;">COW-104</h3>
+        <div id="modal-animal-sub" style="font-size: 0.8rem; color: var(--text-muted);">Holstein Cow • Female • 4 Years</div>
+      </div>
+      <button class="btn btn-secondary btn-icon-only" onclick="app.closeModal('animal-detail-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- HEALTH RISK INDICATOR BADGE -->
+      <div style="padding:10px 14px; background:var(--bg-app); border-radius:var(--radius-md); margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;" id="modal-risk-banner">
+        <div>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">HEALTH RISK LEVEL:</span>
+          <span id="detail-risk-badge" class="badge badge-healthy" style="margin-left:6px;">Low Risk</span>
+        </div>
+        <span style="font-size:0.72rem; color:var(--text-light); italic;">*Non-diagnostic prototype risk indicator</span>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="app.switchTab(this, 'tab-overview')">Overview</button>
+        <button class="tab-btn" onclick="app.switchTab(this, 'tab-history')">Health Timeline</button>
+        <button class="tab-btn" onclick="app.switchTab(this, 'tab-vac')">Vaccinations</button>
+        <button class="tab-btn" onclick="app.switchTab(this, 'tab-med')">Medical Records</button>
+      </div>
+
+      <!-- Tab: Overview -->
+      <div class="tab-pane active" id="tab-overview">
+        <div class="form-grid" style="margin-bottom: 20px;">
+          <div class="card-info-item"><span class="info-label">Breed</span><span class="info-value" id="detail-breed">Holstein Friesian</span></div>
+          <div class="card-info-item"><span class="info-label">Weight</span><span class="info-value" id="detail-weight">540 kg</span></div>
+          <div class="card-info-item"><span class="info-label">Health Status</span><span class="info-value" id="detail-status">-</span></div>
+          <div class="card-info-item"><span class="info-label">Last Checkup</span><span class="info-value" id="detail-checkup">Sep 20, 2026</span></div>
+          <div class="card-info-item"><span class="info-label">Next Vaccination</span><span class="info-value" id="detail-next-vac">Sep 25, 2026</span></div>
+        </div>
+        <div style="background: var(--bg-app); padding: 14px; border-radius: var(--radius-md);">
+          <div class="info-label">General Notes</div>
+          <p id="detail-notes" style="font-size: 0.88rem; color: var(--text-main); margin-top: 4px;">Good health condition, optimal rumination.</p>
+        </div>
+      </div>
+
+      <!-- Tab: History Timeline -->
+      <div class="tab-pane" id="tab-history">
+        <div class="activity-list" id="detail-history-list"></div>
+      </div>
+
+      <!-- Tab: Vaccinations -->
+      <div class="tab-pane" id="tab-vac">
+        <div class="activity-list" id="detail-vac-list"></div>
+      </div>
+
+      <!-- Tab: Medical Records -->
+      <div class="tab-pane" id="tab-med">
+        <div class="activity-list" id="detail-med-list"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="app.closeModal('animal-detail-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. ADD ANIMAL MODAL -->
+<div class="modal-backdrop" id="add-animal-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 data-i18n="add_animal">Add New Animal</h3>
+      <button class="btn btn-secondary btn-icon-only" onclick="app.closeModal('add-animal-modal')">✕</button>
+    </div>
+    <form id="add-animal-form" onsubmit="app.handleAddAnimal(event)">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Animal ID *</label>
+            <input type="text" class="form-control" id="new-id" placeholder="e.g. COW-106" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Species *</label>
+            <select class="form-control" id="new-species" required>
+              <option value="Cow">Cow</option>
+              <option value="Goat">Goat</option>
+              <option value="Sheep">Sheep</option>
+              <option value="Buffalo">Buffalo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Breed</label>
+            <input type="text" class="form-control" id="new-breed" placeholder="e.g. Holstein">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Age (years)</label>
+            <input type="number" class="form-control" id="new-age" value="2" min="0" step="0.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select class="form-control" id="new-gender">
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Weight (kg)</label>
+            <input type="number" class="form-control" id="new-weight" value="420">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Health Status</label>
+            <select class="form-control" id="new-status">
+              <option value="Healthy">Healthy</option>
+              <option value="Monitoring">Monitoring</option>
+              <option value="Needs Attention">Needs Attention</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Checkup Date</label>
+            <input type="date" class="form-control" id="new-checkup" value="2026-09-22">
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Notes & Observations</label>
+            <textarea class="form-control" id="new-notes" rows="2" placeholder="Initial observation..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('add-animal-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Animal</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 3. LOG HEALTH CHECK MODAL -->
+<div class="modal-backdrop" id="log-vitals-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 data-i18n="record_health_check">Record Health Check</h3>
+      <button class="btn btn-secondary btn-icon-only" onclick="app.closeModal('log-vitals-modal')">✕</button>
+    </div>
+    <form onsubmit="app.handleLogVitals(event)">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Select Animal</label>
+            <select class="form-control" id="vitals-animal-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Temperature (°C)</label>
+            <input type="number" step="0.1" class="form-control" id="vitals-temp" value="38.6" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Heart Rate (bpm)</label>
+            <input type="number" class="form-control" id="vitals-hr" value="65" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Weight (kg)</label>
+            <input type="number" class="form-control" id="vitals-weight" value="450" required>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Clinical Observation</label>
+            <textarea class="form-control" id="vitals-obs" rows="2" placeholder="Appetite, activity level, symptoms..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('log-vitals-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Check</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 4. SCHEDULE VACCINATION MODAL -->
+<div class="modal-backdrop" id="schedule-vac-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>Schedule Vaccination</h3>
+      <button class="btn btn-secondary btn-icon-only" onclick="app.closeModal('schedule-vac-modal')">✕</button>
+    </div>
+    <form onsubmit="app.handleScheduleVac(event)">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Select Animal</label>
+            <select class="form-control" id="vac-animal-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vaccine Name</label>
+            <input type="text" class="form-control" id="vac-name" placeholder="e.g. FMD Vaccine" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" class="form-control" id="vac-date" value="2026-10-01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attending Vet</label>
+            <input type="text" class="form-control" id="vac-vet" value="Dr. Sharma">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('schedule-vac-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Schedule</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 5. NEW MEDICAL RECORD MODAL -->
+<div class="modal-backdrop" id="add-medical-modal">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>New Medical Record</h3>
+      <button class="btn btn-secondary btn-icon-only" onclick="app.closeModal('add-medical-modal')">✕</button>
+    </div>
+    <form onsubmit="app.handleAddMedicalRecord(event)">
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Animal ID</label>
+            <select class="form-control" id="med-animal-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Diagnosis / Observation</label>
+            <input type="text" class="form-control" id="med-diagnosis" placeholder="e.g. Mastitis check" required>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Treatment Provided</label>
+            <input type="text" class="form-control" id="med-treatment" placeholder="e.g. Antibiotic course 3 days" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Health Outcome</label>
+            <select class="form-control" id="med-status">
+              <option value="Healthy">Healthy / Resolved</option>
+              <option value="Monitoring" selected>Monitoring</option>
+              <option value="Needs Attention">Needs Attention</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Attending Vet</label>
+            <input type="text" class="form-control" id="med-vet" value="Dr. Sharma">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="app.closeModal('add-medical-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 6. PRINTABLE REPORT MODAL -->
+<div class="modal-backdrop" id="printable-report-modal">
+  <div class="modal-container" style="max-width:700px;">
+    <div class="modal-header">
+      <h3>Livestock Health Report Preview</h3>
+      <button class="btn btn-secondary btn-icon-only" onclick="app.closeModal('printable-report-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="printable-report">
+      <div style="border-bottom:2px solid var(--dark-green); padding-bottom:12px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2 style="color:var(--dark-green);">GREEN VALLEY FARM</h2>
+          <div style="font-size:0.85rem; color:var(--text-muted);">Official Livestock Health & Audit Report</div>
+        </div>
+        <div style="text-align:right; font-size:0.8rem; color:var(--text-muted);">
+          Date: Sep 22, 2026<br>Prepared by: Dr. Sharma
+        </div>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:20px;">
+        <div style="background:var(--bg-app); padding:10px; border-radius:6px; text-align:center;">
+          <div style="font-size:0.75rem; color:var(--text-muted);">Total Animals</div>
+          <strong style="font-size:1.2rem;">128</strong>
+        </div>
+        <div style="background:var(--bg-app); padding:10px; border-radius:6px; text-align:center;">
+          <div style="font-size:0.75rem; color:var(--text-muted);">Healthy</div>
+          <strong style="font-size:1.2rem; color:var(--status-healthy);">112</strong>
+        </div>
+        <div style="background:var(--bg-app); padding:10px; border-radius:6px; text-align:center;">
+          <div style="font-size:0.75rem; color:var(--text-muted);">Needs Attention</div>
+          <strong style="font-size:1.2rem; color:var(--status-attention);">10</strong>
+        </div>
+        <div style="background:var(--bg-app); padding:10px; border-radius:6px; text-align:center;">
+          <div style="font-size:0.75rem; color:var(--text-muted);">Vaccines Due</div>
+          <strong style="font-size:1.2rem; color:#0284c7;">6</strong>
+        </div>
+      </div>
+
+      <h4 style="margin-bottom:8px; font-size:0.9rem;">Herd Summary & Status Breakdown</h4>
+      <table class="data-table" style="margin-bottom:16px;">
+        <thead>
+          <tr><th>Species</th><th>Total</th><th>Healthy</th><th>Needs Attention</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Cow</td><td>64</td><td>58</td><td>6</td></tr>
+          <tr><td>Goat</td><td>32</td><td>28</td><td>4</td></tr>
+          <tr><td>Sheep</td><td>20</td><td>18</td><td>2</td></tr>
+          <tr><td>Buffalo</td><td>12</td><td>11</td><td>1</td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:0.78rem; color:var(--text-muted); text-align:center; border-top:1px solid var(--border-color); padding-top:12px;">
+        Healthy Animals. Smarter Farming. • Green Valley Farm Digital Health Assistant
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="app.closeModal('printable-report-modal')">Close</button>
+      <button class="btn btn-primary" onclick="window.print()">Print / Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- ================= JAVASCRIPT APPLICATION LOGIC & I18N ================= -->
+<script>
+  // THREE-LANGUAGE TRANSLATION DICTIONARY
+  const I18N = {
+    en: {
+      app_title: "LIVESTOCK HEALTH",
+      tagline: "Healthy Animals. Smarter Farming.",
+      dashboard: "Dashboard",
+      animals: "Animals",
+      health_monitoring: "Health Monitoring",
+      vaccinations: "Vaccinations",
+      medical_records: "Medical Records",
+      alerts: "Alerts",
+      daily_tasks: "Daily Tasks",
+      vet_support: "Veterinary Support",
+      reports: "Reports & Analytics",
+      settings: "Settings",
+      profile: "Profile",
+      dashboard_header: "Livestock Health Dashboard",
+      header_sub: "Monitor your herd and keep their health on track.",
+      greeting: "Good Morning 👋",
+      hero_sub: "Here's the health status of your herd today.",
+      farm_score: "Farm Health Score",
+      score_desc: "Based on health status, vaccination and checkups.",
+      total_animals: "Total Animals",
+      healthy: "Healthy",
+      needs_attention: "Needs Attention",
+      critical: "Critical",
+      monitoring: "Monitoring",
+      vaccinations_due: "Vaccinations Due",
+      checkups_this_week: "Checkups This Week",
+      attention_today_title: "What Needs Attention Today?",
+      animal_of_the_day: "Animal of the Day",
+      todays_tasks: "Today's Farm Tasks",
+      upcoming_vaccinations: "Upcoming Vaccinations",
+      record_health_check: "+ Record Health Check",
+      add_animal: "+ Add Animal",
+      generate_report: "Generate Health Report",
+      view_profile: "View Profile",
+      mark_completed: "Mark Completed",
+      notifications: "Notifications"
+    },
+    mr: {
+      app_title: "पशु आरोग्य",
+      tagline: "निरोगी जनावरे. स्मार्ट शेती.",
+      dashboard: "डॅशबोर्ड",
+      animals: "जनावरे",
+      health_monitoring: "आरोग्य देखरेख",
+      vaccinations: "लसीकरण",
+      medical_records: "वैद्यकीय नोंदी",
+      alerts: "अलर्ट आणि सूचना",
+      daily_tasks: "दैनिक कामे",
+      vet_support: "पशूवैद्यकीय मदत",
+      reports: "अहवाल आणि विश्लेषण",
+      settings: "सेटिंग्ज",
+      profile: "प्रोफाइल",
+      dashboard_header: "पशु आरोग्य डॅशबोर्ड",
+      header_sub: "तुमच्या जनावरांच्या आरोग्याची नियमित नोंद ठेवा.",
+      greeting: "शुभ प्रभात 👋",
+      hero_sub: "आज तुमच्या कळपाच्या आरोग्याची स्थिती येथे आहे.",
+      farm_score: "फार्म आरोग्य स्कोअर",
+      score_desc: "आरोग्य स्थिती, लसीकरण आणि तपासणीवर आधारित.",
+      total_animals: "एकूण जनावरे",
+      healthy: "निरोगी",
+      needs_attention: "लक्ष देणे आवश्यक",
+      critical: "गंभीर",
+      monitoring: "देखरेख",
+      vaccinations_due: "लसीकरण बाकी",
+      checkups_this_week: "या आठवड्यातील तपासण्या",
+      attention_today_title: "आज कशावर लक्ष देणे आवश्यक आहे?",
+      animal_of_the_day: "आजचे प्रमुख जनावर",
+      todays_tasks: "आजची शेतातील कामे",
+      upcoming_vaccinations: "आगामी लसीकरण",
+      record_health_check: "+ आरोग्य तपासणी नोंदवा",
+      add_animal: "+ नवीन जनावर जोडा",
+      generate_report: "आरोग्य अहवाल तयार करा",
+      view_profile: "प्रोफाइल पहा",
+      mark_completed: "पूर्ण झाले",
+      notifications: "सूचना"
+    },
+    hi: {
+      app_title: "पशु स्वास्थ्य",
+      tagline: "स्वस्थ पशु. स्मार्ट खेती।",
+      dashboard: "डैशबोर्ड",
+      animals: "पशु",
+      health_monitoring: "स्वास्थ्य निगरानी",
+      vaccinations: "टीकाकरण",
+      medical_records: "चिकित्सा रिकॉर्ड",
+      alerts: "अलर्ट और अलर्ट",
+      daily_tasks: "दैनिक कार्य",
+      vet_support: "पशुचिकित्सा सहायता",
+      reports: "रिपोर्ट और विश्लेषण",
+      settings: "सेटिंग्स",
+      profile: "प्रोफाइल",
+      dashboard_header: "पशु स्वास्थ्य डैशबोर्ड",
+      header_sub: "अपने पशुओं के स्वास्थ्य की नियमित निगरानी करें।",
+      greeting: "शुभ प्रभात 👋",
+      hero_sub: "आज आपके झुंड के स्वास्थ्य की स्थिति यहां है।",
+      farm_score: "फार्म स्वास्थ्य स्कोर",
+      score_desc: "स्वास्थ्य स्थिति, टीकाकरण और जांच के आधार पर।",
+      total_animals: "कुल पशु",
+      healthy: "स्वस्थ",
+      needs_attention: "ध्यान देने की आवश्यकता",
+      critical: "गंभीर",
+      monitoring: "निगरानी",
+      vaccinations_due: "टीकाकरण देय",
+      checkups_this_week: "इस सप्ताह की जांच",
+      attention_today_title: "आज किस पर ध्यान देने की आवश्यकता है?",
+      animal_of_the_day: "आज का प्रमुख पशु",
+      todays_tasks: "आज के कृषि कार्य",
+      upcoming_vaccinations: "आगामी टीकाकरण",
+      record_health_check: "+ स्वास्थ्य जांच दर्ज करें",
+      add_animal: "+ नया पशु जोड़ें",
+      generate_report: "स्वास्थ्य रिपोर्ट बनाएं",
+      view_profile: "प्रोफाइल देखें",
+      mark_completed: "पूर्ण चिह्नित करें",
+      notifications: "सूचनाएं"
+    }
+  };
+
+  // INITIAL MOCK DATA
+  const DEFAULT_DATA = {
+    animals: [
+      { id: "COW-101", species: "Cow", breed: "Holstein Friesian", age: 4, gender: "Female", weight: 560, status: "Healthy", checkup: "2026-09-20", nextVac: "2026-10-15", notes: "Good appetite, optimal milk yield." },
+      { id: "COW-102", species: "Cow", breed: "Jersey", age: 3, gender: "Female", weight: 480, status: "Healthy", checkup: "2026-09-18", nextVac: "2026-10-20", notes: "Routine check clean." },
+      { id: "COW-103", species: "Cow", breed: "Angus", age: 2.5, gender: "Male", weight: 610, status: "Healthy", checkup: "2026-09-15", nextVac: "2026-10-10", notes: "Strong growth trajectory." },
+      { id: "COW-104", species: "Cow", breed: "Holstein", age: 4, gender: "Female", weight: 540, status: "Healthy", checkup: "2026-09-20", nextVac: "2026-09-25", notes: "FMD vaccination due soon." },
+      { id: "COW-087", species: "Cow", breed: "Hereford", age: 5, gender: "Female", weight: 590, status: "Critical", checkup: "2026-09-21", nextVac: "2026-10-05", notes: "Elevated temperature detected." },
+      { id: "GOAT-021", species: "Goat", breed: "Boer", age: 2, gender: "Female", weight: 45, status: "Healthy", checkup: "2026-09-19", nextVac: "2026-10-02", notes: "Active and alert." },
+      { id: "GOAT-022", species: "Goat", breed: "Jamunapari", age: 1.5, gender: "Male", weight: 42, status: "Healthy", checkup: "2026-09-14", nextVac: "2026-10-12", notes: "Normal vital signs." },
+      { id: "GOAT-023", species: "Goat", breed: "Jamunapari", age: 2, gender: "Female", weight: 48, status: "Needs Attention", checkup: "2026-09-19", nextVac: "2026-10-02", notes: "PPR vaccine scheduled. Minor cough." },
+      { id: "GOAT-024", species: "Goat", breed: "Saanen", age: 3, gender: "Female", weight: 52, status: "Monitoring", checkup: "2026-09-17", nextVac: "2026-10-18", notes: "Post-treatment observation." },
+      { id: "SHP-031", species: "Sheep", breed: "Dorper", age: 3, gender: "Male", weight: 75, status: "Healthy", checkup: "2026-09-21", nextVac: "2026-10-05", notes: "Enterotoxemia vaccine booster scheduled." },
+      { id: "SHP-032", species: "Sheep", breed: "Merino", age: 2, gender: "Female", weight: 65, status: "Healthy", checkup: "2026-09-12", nextVac: "2026-10-22", notes: "Wool quality excellent." },
+      { id: "SHP-033", species: "Sheep", breed: "Suffolk", age: 1, gender: "Female", weight: 58, status: "Healthy", checkup: "2026-09-10", nextVac: "2026-10-25", notes: "Growth within standard parameters." },
+      { id: "BUF-011", species: "Buffalo", breed: "Murrah", age: 5, gender: "Female", weight: 510, status: "Needs Attention", checkup: "2026-09-16", nextVac: "2026-10-14", notes: "Checkup overdue by 2 days." },
+      { id: "BUF-012", species: "Buffalo", breed: "Nili-Ravi", age: 4, gender: "Female", weight: 650, status: "Monitoring", checkup: "2026-09-18", nextVac: "2026-10-16", notes: "Vitals stable, minor hooves check." }
+    ],
+    vitals: [
+      { date: "2026-09-21 14:15", animalId: "COW-087", temp: 39.8, heartRate: 78, weight: 590, status: "Critical", notes: "Elevated temp. Fever management." },
+      { date: "2026-09-20 11:00", animalId: "COW-104", temp: 38.6, heartRate: 62, weight: 540, status: "Healthy", notes: "Normal rumination and vitals." },
+      { date: "2026-09-19 16:20", animalId: "GOAT-023", temp: 38.9, heartRate: 78, weight: 48, status: "Needs Attention", notes: "Slight respiratory wheeze." }
+    ],
+    vaccinations: [
+      { id: 1, animalId: "COW-104", species: "Cow", vaccine: "FMD Vaccine", dueDate: "2026-09-25", status: "Due Soon" },
+      { id: 2, animalId: "GOAT-023", species: "Goat", vaccine: "PPR Vaccine", dueDate: "2026-10-02", status: "Scheduled" },
+      { id: 3, animalId: "SHP-031", species: "Sheep", vaccine: "Enterotoxemia", dueDate: "2026-10-05", status: "Scheduled" },
+      { id: 4, animalId: "COW-101", species: "Cow", vaccine: "Anthrax Booster", dueDate: "2026-09-10", status: "Completed" }
+    ],
+    medicalRecords: [
+      { id: 1, date: "2026-09-20", animalId: "COW-104", diagnosis: "Routine Health Check", treatment: "Preventative vitamin boost", vet: "Dr. Sharma", status: "Healthy" },
+      { id: 2, date: "2026-09-19", animalId: "GOAT-023", diagnosis: "Respiratory Observation", treatment: "Mild anti-inflammatory", vet: "Dr. Sharma", status: "Monitoring" },
+      { id: 3, date: "2026-09-18", animalId: "COW-087", diagnosis: "Temperature Check", treatment: "Cooling wash & quarantine", vet: "Dr. Sharma", status: "Needs Attention" }
+    ],
+    alerts: [
+      { id: 1, priority: "HIGH", title: "Elevated Temp", animalId: "COW-087", message: "Cow #COW-087 has elevated temperature (39.8°C).", time: "1 hour ago", iconBg: "#fee2e2", iconColor: "#dc2626" },
+      { id: 2, priority: "MEDIUM", title: "Vaccination Due", animalId: "GOAT-023", message: "Goat #GOAT-023 vaccination due in 3 days.", time: "Yesterday", iconBg: "#fef3c7", iconColor: "#d97706" },
+      { id: 3, priority: "INFO", title: "Checkup Completed", animalId: "COW-104", message: "Cow #COW-104 routine health check completed.", time: "2 days ago", iconBg: "#e0f2fe", iconColor: "#0284c7" }
+    ],
+    tasks: [
+      { id: 1, text: "Check COW-087 temperature", done: false },
+      { id: 2, text: "Give scheduled medicine to GOAT-023", done: false },
+      { id: 3, text: "Record COW-104 health check", done: true },
+      { id: 4, text: "Vaccination prep for GOAT-023", done: true },
+      { id: 5, text: "Review daily health alerts", done: true }
+    ]
+  };
+
+  class LivestockApp {
+    constructor() {
+      this.currentLang = localStorage.getItem("selected_lang") || "en";
+      this.data = this.loadData();
+      this.currentView = "dashboard";
+      this.init();
+    }
+
+    loadData() {
+      const stored = localStorage.getItem("livestock_app_data_v3");
+      if (stored) {
+        try { 
+          const parsed = JSON.parse(stored);
+          if (parsed && Array.isArray(parsed.animals) && Array.isArray(parsed.tasks)) {
+            return parsed;
+          }
+        } catch (e) { console.error(e); }
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+
+    saveData() {
+      localStorage.setItem("livestock_app_data_v3", JSON.stringify(this.data));
+    }
+
+    init() {
+      if (!this.data || !Array.isArray(this.data.tasks)) {
+        this.data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      }
+      this.setupEventListeners();
+      this.setLanguage(this.currentLang);
+      this.populateSelectDropdowns();
+      this.renderNotifications();
+      this.renderTasks();
+      this.renderMiniCalendar();
+    }
+
+    setLanguage(lang) {
+      this.currentLang = lang;
+      localStorage.setItem("selected_lang", lang);
+
+      document.querySelectorAll(".lang-btn").forEach(btn => {
+        const txt = btn.innerText.toLowerCase();
+        btn.classList.toggle("active", txt.includes(lang) || (lang === 'mr' && btn.innerText.includes('मराठी')) || (lang === 'hi' && btn.innerText.includes('हिंदी')));
+      });
+
+      const translations = I18N[lang] || I18N.en;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (translations[key]) el.innerText = translations[key];
+      });
+
+      this.renderCurrentView();
+    }
+
+    setupEventListeners() {
+      document.querySelectorAll(".nav-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const view = item.getAttribute("data-view");
+          this.switchView(view);
+          document.getElementById("sidebar").classList.remove("open");
+        });
+      });
+
+      document.getElementById("mobile-menu-toggle")?.addEventListener("click", () => {
+        document.getElementById("sidebar").classList.toggle("open");
+      });
+
+      const notifBtn = document.getElementById("notif-bell-btn");
+      const notifDropdown = document.getElementById("notif-dropdown");
+      if (notifBtn && notifDropdown) {
+        notifBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          notifDropdown.classList.toggle("show");
+        });
+        document.addEventListener("click", (e) => {
+          if (!notifDropdown.contains(e.target) && e.target !== notifBtn) {
+            notifDropdown.classList.remove("show");
+          }
+        });
+      }
+
+      document.getElementById("global-search-input")?.addEventListener("input", (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        if (query.length > 0) {
+          this.switchView("animals");
+          document.getElementById("animal-search-input").value = query;
+          this.filterAnimals();
+        }
+      });
+    }
+
+    switchView(viewName) {
+      this.currentView = viewName;
+      document.querySelectorAll(".view-section").forEach(sec => sec.classList.remove("active"));
+      document.querySelectorAll(".nav-item").forEach(nav => nav.classList.remove("active"));
+
+      const targetView = document.getElementById(`view-${viewName}`);
+      const targetNav = document.querySelector(`.nav-item[data-view="${viewName}"]`);
+
+      if (targetView) targetView.classList.add("active");
+      if (targetNav) targetNav.classList.add("active");
+
+      this.renderCurrentView();
+    }
+
+    renderCurrentView() {
+      switch (this.currentView) {
+        case "dashboard":
+          this.renderDashboard();
+          break;
+        case "animals":
+          this.filterAnimals();
+          break;
+        case "health-monitoring":
+          this.renderVitalsView();
+          break;
+        case "vaccinations":
+          this.renderVaccinationsView();
+          break;
+        case "medical-records":
+          this.renderMedicalRecordsView();
+          break;
+        case "alerts":
+          this.renderAlertsView();
+          break;
+        case "daily-tasks":
+          this.renderFullTasksView();
+          break;
+        case "reports":
+          this.renderReportsView();
+          break;
+      }
+    }
+
+    // --- DASHBOARD RENDER ---
+    renderDashboard() {
+      if (!this.data.animals) return;
+      const healthyCount = this.data.animals.filter(a => a.status === "Healthy").length;
+      const attCount = this.data.animals.filter(a => a.status === "Needs Attention" || a.status === "Critical").length;
+      const vacDue = this.data.vaccinations.filter(v => v.status === "Due Soon" || v.status === "Scheduled").length;
+
+      document.getElementById("stat-total-animals").innerText = this.data.animals.length;
+      document.getElementById("stat-healthy-animals").innerText = healthyCount;
+      document.getElementById("stat-attention-animals").innerText = attCount;
+      document.getElementById("stat-vaccinations-due").innerText = vacDue;
+
+      const vacTbody = document.getElementById("dashboard-vaccinations-table");
+      if (vacTbody) {
+        const upcoming = this.data.vaccinations.slice(0, 4);
+        vacTbody.innerHTML = upcoming.map(vac => `
+          <tr>
+            <td data-label="Animal ID"><span class="animal-id-tag">${vac.animalId}</span></td>
+            <td data-label="Species">${vac.species}</td>
+            <td data-label="Vaccine">${vac.vaccine}</td>
+            <td data-label="Due Date">${vac.dueDate}</td>
+            <td data-label="Status">
+              <span class="badge ${vac.status === 'Completed' ? 'badge-healthy' : 'badge-attention'}">
+                <span class="badge-dot"></span>${vac.status}
+              </span>
+            </td>
+            <td data-label="Action" style="text-align: right;">
+              ${vac.status !== 'Completed' ? `<button class="btn btn-secondary btn-sm" onclick="app.completeVaccination(${vac.id})">Complete</button>` : `<span style="font-size:0.8rem; color:var(--text-muted);">Done</span>`}
+            </td>
+          </tr>
+        `).join("");
+      }
+
+      this.renderTasks();
+    }
+
+    renderTasks() {
+      const container = document.getElementById("daily-task-container");
+      if (!container || !this.data || !Array.isArray(this.data.tasks)) return;
+
+      const completed = this.data.tasks.filter(t => t.done).length;
+      const total = this.data.tasks.length;
+      const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      const txtEl = document.getElementById("task-progress-text");
+      const barEl = document.getElementById("task-progress-bar");
+      if (txtEl) txtEl.innerText = `${completed} of ${total} completed (${pct}%)`;
+      if (barEl) barEl.style.width = `${pct}%`;
+
+      container.innerHTML = this.data.tasks.map(task => `
+        <label class="task-item ${task.done ? 'done' : ''}">
+          <input type="checkbox" ${task.done ? 'checked' : ''} onchange="app.toggleTask(${task.id})">
+          <span>${task.text}</span>
+        </label>
+      `).join("");
+    }
+
+    renderFullTasksView() {
+      const container = document.getElementById("full-task-list");
+      if (container && this.data && Array.isArray(this.data.tasks)) {
+        container.innerHTML = this.data.tasks.map(task => `
+          <label class="task-item ${task.done ? 'done' : ''}" style="padding:14px;">
+            <input type="checkbox" ${task.done ? 'checked' : ''} onchange="app.toggleTask(${task.id})">
+            <span style="font-size:1rem;">${task.text}</span>
+          </label>
+        `).join("");
+      }
+    }
+
+    toggleTask(id) {
+      const task = this.data.tasks.find(t => t.id === id);
+      if (task) {
+        task.done = !task.done;
+        this.saveData();
+        this.renderTasks();
+        if (this.currentView === "daily-tasks") this.renderFullTasksView();
+        this.showToast("Task updated", "info");
+      }
+    }
+
+    filterAnimals() {
+      const search = (document.getElementById("animal-search-input")?.value || "").toLowerCase();
+      const species = document.getElementById("animal-species-filter")?.value || "all";
+      const status = document.getElementById("animal-status-filter")?.value || "all";
+
+      const filtered = this.data.animals.filter(a => {
+        const matchesSearch = a.id.toLowerCase().includes(search) || a.breed.toLowerCase().includes(search);
+        const matchesSpecies = species === "all" || a.species === species;
+        const matchesStatus = status === "all" || a.status === status;
+        return matchesSearch && matchesSpecies && matchesStatus;
+      });
+
+      const container = document.getElementById("animals-grid-container");
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="grid-column: 1/-1;">
+            <div class="empty-icon">🔍</div>
+            <h4>No animals found</h4>
+            <p>Try changing your search or filters.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(a => {
+        let badgeClass = "badge-healthy";
+        if (a.status === "Monitoring") badgeClass = "badge-monitoring";
+        if (a.status === "Needs Attention") badgeClass = "badge-attention";
+        if (a.status === "Critical") badgeClass = "badge-critical";
+
+        return `
+          <div class="animal-card">
+            <div class="animal-card-header">
+              <div>
+                <span class="animal-id-tag">${a.id}</span>
+                <div style="font-size:0.8rem; color:var(--text-muted);">${a.species} • ${a.breed}</div>
+              </div>
+              <span class="badge ${badgeClass}"><span class="badge-dot"></span>${a.status}</span>
+            </div>
+            <div class="animal-card-body">
+              <div class="card-info-item"><span class="info-label">Age</span><span class="info-value">${a.age} yrs</span></div>
+              <div class="card-info-item"><span class="info-label">Gender</span><span class="info-value">${a.gender}</span></div>
+              <div class="card-info-item"><span class="info-label">Weight</span><span class="info-value">${a.weight} kg</span></div>
+              <div class="card-info-item"><span class="info-label">Next Vaccine</span><span class="info-value">${a.nextVac}</span></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%; justify-content:center;" onclick="app.viewAnimalDetail('${a.id}')">
+              View Profile & Timeline
+            </button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    viewAnimalDetail(id) {
+      const a = this.data.animals.find(item => item.id === id);
+      if (!a) return;
+
+      document.getElementById("modal-animal-id").innerText = a.id;
+      document.getElementById("modal-animal-sub").innerText = `${a.species} • ${a.breed} • ${a.gender} • ${a.age} Years`;
+      document.getElementById("detail-breed").innerText = a.breed;
+      document.getElementById("detail-weight").innerText = `${a.weight} kg`;
+      document.getElementById("detail-checkup").innerText = a.checkup;
+      document.getElementById("detail-next-vac").innerText = a.nextVac;
+      document.getElementById("detail-notes").innerText = a.notes || "No notes recorded.";
+
+      let badgeClass = "badge-healthy";
+      let riskLevel = "Low Risk";
+      if (a.status === "Monitoring") { badgeClass = "badge-monitoring"; riskLevel = "Medium Risk"; }
+      if (a.status === "Needs Attention") { badgeClass = "badge-attention"; riskLevel = "Medium Risk"; }
+      if (a.status === "Critical") { badgeClass = "badge-critical"; riskLevel = "High Risk"; }
+
+      document.getElementById("detail-status").innerHTML = `<span class="badge ${badgeClass}"><span class="badge-dot"></span>${a.status}</span>`;
+      document.getElementById("detail-risk-badge").className = `badge ${badgeClass}`;
+      document.getElementById("detail-risk-badge").innerText = riskLevel;
+
+      const vitalsList = this.data.vitals.filter(v => v.animalId === id);
+      document.getElementById("detail-history-list").innerHTML = vitalsList.length ? vitalsList.map(v => `
+        <div class="activity-item">
+          <div class="activity-icon">🩺</div>
+          <div class="activity-content">
+            <div class="activity-title">${v.date} - Temp: ${v.temp}°C | HR: ${v.heartRate} bpm</div>
+            <div class="activity-desc">${v.notes}</div>
+          </div>
+        </div>
+      `).join("") : `<p style="font-size:0.85rem; color:var(--text-muted);">No recorded vitals history.</p>`;
+
+      const vacsList = this.data.vaccinations.filter(v => v.animalId === id);
+      document.getElementById("detail-vac-list").innerHTML = vacsList.length ? vacsList.map(v => `
+        <div class="activity-item">
+          <div class="activity-icon">💉</div>
+          <div class="activity-content">
+            <div class="activity-title">${v.vaccine} (${v.status})</div>
+            <div class="activity-desc">Due: ${v.dueDate}</div>
+          </div>
+        </div>
+      `).join("") : `<p style="font-size:0.85rem; color:var(--text-muted);">No vaccination records.</p>`;
+
+      const medList = this.data.medicalRecords.filter(m => m.animalId === id);
+      document.getElementById("detail-med-list").innerHTML = medList.length ? medList.map(m => `
+        <div class="activity-item">
+          <div class="activity-icon">📋</div>
+          <div class="activity-content">
+            <div class="activity-title">${m.date} - ${m.diagnosis}</div>
+            <div class="activity-desc">Treatment: ${m.treatment} (${m.vet})</div>
+          </div>
+        </div>
+      `).join("") : `<p style="font-size:0.85rem; color:var(--text-muted);">No medical intervention records.</p>`;
+
+      this.openModal("animal-detail-modal");
+    }
+
+    renderVitalsView() {
+      const tbody = document.getElementById("vitals-table-body");
+      if (!tbody) return;
+      tbody.innerHTML = this.data.vitals.map(v => `
+        <tr>
+          <td>${v.date}</td>
+          <td><span class="animal-id-tag">${v.animalId}</span></td>
+          <td><strong>${v.temp}°C</strong></td>
+          <td>${v.heartRate} bpm</td>
+          <td>${v.weight} kg</td>
+          <td><span class="badge ${v.status === 'Critical' ? 'badge-critical' : v.status === 'Needs Attention' ? 'badge-attention' : 'badge-healthy'}">${v.status}</span></td>
+          <td style="font-size:0.85rem;">${v.notes}</td>
+        </tr>
+      `).join("");
+    }
+
+    renderVaccinationsView() {
+      const filter = document.getElementById("vac-status-filter")?.value || "all";
+      const filtered = this.data.vaccinations.filter(v => filter === "all" || v.status === filter);
+      const tbody = document.getElementById("vaccinations-full-table");
+      if (!tbody) return;
+      
+      tbody.innerHTML = filtered.map(v => `
+        <tr>
+          <td data-label="Animal ID"><span class="animal-id-tag">${v.animalId}</span></td>
+          <td data-label="Species">${v.species}</td>
+          <td data-label="Vaccine">${v.vaccine}</td>
+          <td data-label="Due Date">${v.dueDate}</td>
+          <td data-label="Status">
+            <span class="badge ${v.status === 'Completed' ? 'badge-healthy' : 'badge-attention'}">
+              <span class="badge-dot"></span>${v.status}
+            </span>
+          </td>
+          <td data-label="Action" style="text-align: right;">
+            ${v.status !== 'Completed' ? `<button class="btn btn-secondary btn-sm" onclick="app.completeVaccination(${v.id})">Mark Completed</button>` : '<span style="color:var(--text-muted); font-size:0.8rem;">Done</span>'}
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    renderMiniCalendar() {
+      const grid = document.getElementById("mini-calendar-grid");
+      if (!grid) return;
+
+      let html = "";
+      for (let day = 1; day <= 30; day++) {
+        const dateStr = `2026-09-${day < 10 ? '0' + day : day}`;
+        const hasVac = this.data.vaccinations.some(v => v.dueDate === dateStr);
+        html += `
+          <div style="padding:6px; border-radius:4px; background:${hasVac ? '#dcfce7' : 'var(--bg-app)'}; cursor:pointer; font-weight:${hasVac ? '700' : '400'}; color:${hasVac ? 'var(--primary)' : 'var(--text-main)'};" onclick="app.selectCalendarDate('${dateStr}')">
+            ${day}
+          </div>
+        `;
+      }
+      grid.innerHTML = html;
+    }
+
+    selectCalendarDate(dateStr) {
+      const vacs = this.data.vaccinations.filter(v => v.dueDate === dateStr);
+      const detailEl = document.getElementById("calendar-selected-details");
+      if (!detailEl) return;
+      if (vacs.length > 0) {
+        detailEl.innerHTML = `<strong>Vaccinations on ${dateStr}:</strong><br>` + vacs.map(v => `• ${v.animalId}: ${v.vaccine} (${v.status})`).join("<br>");
+      } else {
+        detailEl.innerHTML = `No vaccinations scheduled for ${dateStr}.`;
+      }
+    }
+
+    completeVaccination(id) {
+      const vac = this.data.vaccinations.find(v => v.id === id);
+      if (vac) {
+        vac.status = "Completed";
+        this.saveData();
+        this.renderCurrentView();
+        this.showToast(`Vaccination marked as completed for ${vac.animalId}`, "success");
+      }
+    }
+
+    renderMedicalRecordsView() {
+      const search = (document.getElementById("medical-search-input")?.value || "").toLowerCase();
+      const filtered = this.data.medicalRecords.filter(m => m.diagnosis.toLowerCase().includes(search) || m.treatment.toLowerCase().includes(search) || m.animalId.toLowerCase().includes(search));
+      const tbody = document.getElementById("medical-records-table");
+      if (!tbody) return;
+
+      tbody.innerHTML = filtered.map(m => `
+        <tr>
+          <td>${m.date}</td>
+          <td><span class="animal-id-tag">${m.animalId}</span></td>
+          <td><strong>${m.diagnosis}</strong></td>
+          <td>${m.treatment}</td>
+          <td>${m.vet}</td>
+          <td><span class="badge ${m.status === 'Healthy' ? 'badge-healthy' : 'badge-attention'}">${m.status}</span></td>
+          <td style="text-align: right;"><button class="btn btn-secondary btn-sm" onclick="app.viewAnimalDetail('${m.animalId}')">View</button></td>
+        </tr>
+      `).join("");
+    }
+
+    renderAlertsView() {
+      const container = document.getElementById("alerts-page-list");
+      if (!container) return;
+      container.innerHTML = this.data.alerts.map(alt => `
+        <div class="activity-item" style="padding:14px; background:var(--bg-app); border-radius:var(--radius-md); border:1px solid var(--border-color);">
+          <div class="activity-icon" style="background:${alt.iconBg}; color:${alt.iconColor};">⚠️</div>
+          <div class="activity-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="badge ${alt.priority === 'HIGH' ? 'badge-critical' : 'badge-attention'}">${alt.priority} PRIORITY</span>
+              <span class="activity-time">${alt.time}</span>
+            </div>
+            <div class="activity-title" style="margin-top:6px;">${alt.title} - <span class="animal-id-tag">${alt.animalId}</span></div>
+            <div class="activity-desc">${alt.message}</div>
+            <div style="margin-top:10px; display:flex; gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="app.viewAnimalDetail('${alt.animalId}')">View Animal</button>
+              <button class="btn btn-secondary btn-sm" onclick="app.dismissAlert(${alt.id})">Dismiss Alert</button>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    dismissAlert(id) {
+      this.data.alerts = this.data.alerts.filter(a => a.id !== id);
+      this.saveData();
+      this.renderAlertsView();
+      this.renderNotifications();
+      this.showToast("Alert dismissed", "info");
+    }
+
+    renderReportsView() {
+      const timeframe = document.getElementById("report-timeframe")?.value || "30";
+      const barsContainer = document.getElementById("report-bars-container");
+      if (!barsContainer) return;
+
+      const mockData = {
+        "7": [ { day: "Mon", healthy: 110 }, { day: "Tue", healthy: 111 }, { day: "Wed", healthy: 112 }, { day: "Thu", healthy: 112 } ],
+        "30": [ { day: "Wk 1", healthy: 105 }, { day: "Wk 2", healthy: 108 }, { day: "Wk 3", healthy: 110 }, { day: "Wk 4", healthy: 112 } ],
+        "90": [ { day: "Jul", healthy: 98 }, { day: "Aug", healthy: 104 }, { day: "Sep", healthy: 112 } ]
+      };
+
+      const selected = mockData[timeframe] || mockData["30"];
+      barsContainer.innerHTML = selected.map(item => {
+        const heightPct = (item.healthy / 128) * 100;
+        return `
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; height:100%; justify-content:flex-end;">
+            <div style="width:70%; max-width:40px; background:var(--primary); height:${heightPct}%; border-radius:4px 4px 0 0;"></div>
+            <span style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">${item.day}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    renderNotifications() {
+      const container = document.getElementById("notif-list-container");
+      const badge = document.getElementById("notif-count");
+      if (!container || !badge) return;
+      badge.innerText = this.data.alerts.length;
+
+      if (this.data.alerts.length === 0) {
+        container.innerHTML = `<div style="padding:16px; text-align:center; font-size:0.85rem; color:var(--text-muted);">No new notifications</div>`;
+        return;
+      }
+
+      container.innerHTML = this.data.alerts.map(alt => `
+        <div class="notif-item" onclick="app.switchView('alerts')">
+          <div class="notif-icon" style="background:${alt.iconBg}; color:${alt.iconColor}; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;">!</div>
+          <div>
+            <div style="font-size:0.82rem; font-weight:600; color:var(--text-dark);">${alt.title} (${alt.animalId})</div>
+            <div style="font-size:0.78rem; color:var(--text-muted);">${alt.message}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    markNotificationsRead() {
+      this.data.alerts = [];
+      this.saveData();
+      this.renderNotifications();
+      this.showToast("Notifications marked as read", "info");
+    }
+
+    openModal(modalId) { document.getElementById(modalId)?.classList.add("show"); }
+    closeModal(modalId) { document.getElementById(modalId)?.classList.remove("show"); }
+
+    populateSelectDropdowns() {
+      if (!this.data || !Array.isArray(this.data.animals)) return;
+      const options = this.data.animals.map(a => `<option value="${a.id}">${a.id} (${a.species} - ${a.breed})</option>`).join("");
+      ["vitals-animal-select", "vac-animal-select", "med-animal-select"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = options;
+      });
+    }
+
+    handleAddAnimal(e) {
+      e.preventDefault();
+      const newAnimal = {
+        id: document.getElementById("new-id").value.trim().toUpperCase(),
+        species: document.getElementById("new-species").value,
+        breed: document.getElementById("new-breed").value.trim() || "Standard",
+        age: parseFloat(document.getElementById("new-age").value) || 1,
+        gender: document.getElementById("new-gender").value,
+        weight: parseFloat(document.getElementById("new-weight").value) || 100,
+        status: document.getElementById("new-status").value,
+        checkup: document.getElementById("new-checkup").value || "2026-09-22",
+        nextVac: "2026-10-15",
+        notes: document.getElementById("new-notes").value.trim()
+      };
+
+      this.data.animals.unshift(newAnimal);
+      this.saveData();
+      this.populateSelectDropdowns();
+      this.closeModal("add-animal-modal");
+      this.showToast(`Animal ${newAnimal.id} added successfully.`, "success");
+      this.filterAnimals();
+      this.renderDashboard();
+    }
+
+    handleLogVitals(e) {
+      e.preventDefault();
+      const animalId = document.getElementById("vitals-animal-select").value;
+      const temp = parseFloat(document.getElementById("vitals-temp").value);
+      const hr = parseInt(document.getElementById("vitals-hr").value);
+      const weight = parseInt(document.getElementById("vitals-weight").value);
+      const notes = document.getElementById("vitals-obs").value;
+
+      let status = "Healthy";
+      if (temp > 39.2 || hr > 85) status = "Needs Attention";
+      if (temp > 40.0) status = "Critical";
+
+      const animal = this.data.animals.find(a => a.id === animalId);
+      if (animal) { animal.status = status; animal.weight = weight; }
+
+      this.data.vitals.unshift({
+        date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        animalId, temp, heartRate: hr, weight, status, notes: notes || "Routine health check."
+      });
+
+      this.saveData();
+      this.closeModal("log-vitals-modal");
+      this.showToast("Health check recorded successfully.", "success");
+      this.renderVitalsView();
+      this.renderDashboard();
+    }
+
+    handleScheduleVac(e) {
+      e.preventDefault();
+      const animalId = document.getElementById("vac-animal-select").value;
+      const animal = this.data.animals.find(a => a.id === animalId);
+      const vaccine = document.getElementById("vac-name").value;
+      const dueDate = document.getElementById("vac-date").value;
+
+      this.data.vaccinations.unshift({
+        id: Date.now(), animalId, species: animal ? animal.species : "Livestock", vaccine, dueDate, status: "Scheduled"
+      });
+
+      this.saveData();
+      this.closeModal("schedule-vac-modal");
+      this.showToast("Vaccination scheduled successfully", "success");
+      this.renderVaccinationsView();
+      this.renderMiniCalendar();
+    }
+
+    handleAddMedicalRecord(e) {
+      e.preventDefault();
+      const animalId = document.getElementById("med-animal-select").value;
+      const diagnosis = document.getElementById("med-diagnosis").value;
+      const treatment = document.getElementById("med-treatment").value;
+      const status = document.getElementById("med-status").value;
+      const vet = document.getElementById("med-vet").value;
+
+      this.data.medicalRecords.unshift({
+        id: Date.now(), date: new Date().toISOString().substring(0, 10), animalId, diagnosis, treatment, vet, status
+      });
+
+      this.saveData();
+      this.closeModal("add-medical-modal");
+      this.showToast("Medical record created", "success");
+      this.renderMedicalRecordsView();
+    }
+
+    switchTab(btnEl, tabId) {
+      const container = btnEl.closest(".modal-container");
+      container.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      container.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+      btnEl.classList.add("active");
+      container.querySelector(`#${tabId}`)?.classList.add("active");
+    }
+
+    showToast(message, type = "success") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        toast.style.transition = "all 0.2s ease";
+        setTimeout(() => toast.remove(), 200);
+      }, 3000);
+    }
+  }
+
+  // Global window assignment for inline onclick handlers
+  window.app = new LivestockApp();
+</script>
+</body>
+</html>
+
